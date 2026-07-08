@@ -7,7 +7,7 @@
 
 Interactive exploration of Australian government finances — where the money comes from, where it goes, and how the fiscal position has trended over the last decade.
 
-**Live demo:** _(add your Streamlit Cloud URL after deploying)_
+**Live demo:** https://govt-budget-transparency-dashboard.streamlit.app
 
 ## Business context
 
@@ -46,6 +46,8 @@ flowchart LR
 **Important honesty note baked into the app itself:** the "outlook" projections are a simple linear trend fit over 10 annual data points — not an official fiscal forecast. Real budget forecasts (PBO, Treasury) model GDP growth, demographics, and policy settings explicitly. This is presented as illustrative direction only, clearly labeled in-app. The net operating balance trend in particular carries an R² of 0.009 — essentially no linear relationship with time — and the app surfaces this explicitly rather than hiding a weak fit.
 
 The Labour Force & Productivity tab is similarly honest about its limits: it compares jobs growth vs wages growth as a **cost-intensity signal**, not a true labour productivity measure — no output data exists in this dataset to compute genuine productivity, and the app says so directly rather than implying otherwise.
+
+**Design:** a light-blue "liquid glass" theme — translucent, backdrop-blurred chart cards, a soft wave divider, subtle shimmer animation — distinct from the dark-themed style used across this portfolio's other Streamlit projects.
 
 ## Project structure
 
