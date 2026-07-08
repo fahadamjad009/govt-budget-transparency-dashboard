@@ -128,18 +128,19 @@ with tabs[4]:
 
     st.dataframe(data["growth"].rename(columns={
         "driver": "Driver", "growth_pct": "Growth %", "contribution_billion": "$ billion",
-        "pct_of_total_growth": "% of total growth"}), width="stretch", hide_index=True)
+        "pct_of_total_growth": "% of total growth"}), use_container_width=True, hide_index=True)
 
     st.subheader("Revenue composition, 2024-25")
     st.dataframe(data["revenue"].rename(columns={
         "component": "Component", "pct_of_revenue": "% of revenue", "growth_pct": "Growth %"}),
-        width="stretch", hide_index=True)
+        use_container_width=True, hide_index=True)
 
 with tabs[5]:
-    st.info("⚠️ The projections below are a simple linear trend fit over 10 annual data points, "
+    st.info("⚠️ The projections below are a simple linear regression fit over 10 annual data points, "
             "**not an official fiscal forecast**. Real budget forecasts (PBO, Treasury) model GDP growth, "
-            "demographics, and policy settings explicitly. This shows only the direction implied by the "
-            "recent historical trend if nothing changes — treat it as illustrative, not predictive.")
+            "demographics, and policy settings explicitly. Fit quality (R²) is reported for each series — "
+            "where it's weak, that's flagged explicitly rather than hidden. Treat all of this as illustrative "
+            "direction, not prediction.")
 
     st.subheader("Fastest-growing and shrinking expense categories, 2023-24 → 2024-25")
     cg = data["cat_growth"].sort_values("change_pct", ascending=True)
@@ -163,25 +164,38 @@ with tabs[5]:
     st.caption("Years where the red bar exceeds the teal bar are years expense growth outpaced revenue growth — "
                "a structural driver of rising net debt.")
 
-    st.subheader(f"Net debt (% GDP) — historical + 5-year linear trend extrapolation")
+    st.subheader("Net debt (% GDP) — historical + 5-year linear trend extrapolation")
     dp = data["debt_proj"]
-    fig_debt_proj = go.Figure()
+    debt_r2 = dp["r2"].dropna().iloc[0]
     hist = dp[~dp["is_projection"]]
     proj = dp[dp["is_projection"]]
+    fig_debt_proj = go.Figure()
     fig_debt_proj.add_trace(go.Scatter(x=hist["year"], y=hist["net_debt_pct_gdp"], name="Historical", line=dict(color=ACCENT, width=3)))
     fig_debt_proj.add_trace(go.Scatter(x=proj["year"], y=proj["net_debt_pct_gdp"], name="Trend extrapolation", line=dict(color=ACCENT2, width=3, dash="dash")))
     fig_debt_proj.update_layout(yaxis_title="% of GDP")
     st.plotly_chart(style_fig(fig_debt_proj, 400), width="stretch")
+    if debt_r2 >= 0.3:
+        st.caption(f"Linear fit R\u00b2 = {debt_r2:.2f} — a moderate historical trend, still only a direction indicator, not a forecast.")
+    else:
+        st.warning(f"Linear fit R\u00b2 = {debt_r2:.2f} — weak fit, low confidence in this extrapolation.")
 
     st.subheader("Net operating balance — historical + 5-year linear trend extrapolation")
     npj = data["nob_proj"]
-    fig_nob_proj = go.Figure()
+    nob_r2 = npj["r2"].dropna().iloc[0]
     hist_n = npj[~npj["is_projection"]]
     proj_n = npj[npj["is_projection"]]
+    fig_nob_proj = go.Figure()
     fig_nob_proj.add_trace(go.Bar(x=hist_n["year"], y=hist_n["net_operating_balance_billion"], name="Historical", marker_color=ACCENT))
     fig_nob_proj.add_trace(go.Bar(x=proj_n["year"], y=proj_n["net_operating_balance_billion"], name="Trend extrapolation", marker_color=ACCENT2))
     fig_nob_proj.update_layout(yaxis_title="$ billion")
     st.plotly_chart(style_fig(fig_nob_proj, 400), width="stretch")
+    if nob_r2 < 0.3:
+        st.error(f"⚠️ Linear fit R\u00b2 = {nob_r2:.3f} — essentially **no linear relationship with time**. "
+                 f"Net operating balance swings on annual policy/economic shocks (e.g. COVID in 2020-21), not a "
+                 f"smooth trend. This extrapolation line should be read as noise, not signal — shown for "
+                 f"transparency about the method's limits, not as a usable projection.")
+    else:
+        st.caption(f"Linear fit R\u00b2 = {nob_r2:.2f}.")
 
 st.markdown("---")
 st.caption("Data: Australian Bureau of Statistics, Government Finance Statistics, Annual 2024-25. "
