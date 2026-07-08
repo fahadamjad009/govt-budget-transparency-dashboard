@@ -41,8 +41,7 @@ flowchart LR
 
 ## Project structure
 
-```mermaid
-
+```
 govt-budget-transparency-dashboard/
 ├── .streamlit/config.toml
 ├── .gitignore
@@ -54,15 +53,14 @@ govt-budget-transparency-dashboard/
 │   ├── build_dataset.py       # transcribes official ABS figures into CSVs
 │   └── forecast_trends.py     # linear trend extrapolation + category growth calc
 └── data/
-├── cofog_expenses.csv
-├── fiscal_time_series.csv
-├── net_worth_debt.csv
-├── expense_growth_drivers.csv
-├── revenue_breakdown.csv
-├── net_debt_projection.csv
-├── net_operating_balance_projection.csv
-└── category_growth.csv
-
+    ├── cofog_expenses.csv
+    ├── fiscal_time_series.csv
+    ├── net_worth_debt.csv
+    ├── expense_growth_drivers.csv
+    ├── revenue_breakdown.csv
+    ├── net_debt_projection.csv
+    ├── net_operating_balance_projection.csv
+    └── category_growth.csv
 ```
 
 ## Data Dictionary
