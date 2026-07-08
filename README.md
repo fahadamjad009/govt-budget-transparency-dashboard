@@ -40,6 +40,9 @@ flowchart LR
 **Important honesty note baked into the app itself:** the "outlook" projections are a simple linear trend fit over 10 annual data points — not an official fiscal forecast. Real budget forecasts (PBO, Treasury) model GDP growth, demographics, and policy settings explicitly. This is presented as illustrative direction only, clearly labeled in-app. The net operating balance trend in particular carries an R² of 0.009 — essentially no linear relationship with time — and the app surfaces this explicitly rather than hiding a weak fit.
 
 ## Project structure
+
+```mermaid
+
 govt-budget-transparency-dashboard/
 ├── .streamlit/config.toml
 ├── .gitignore
@@ -59,6 +62,8 @@ govt-budget-transparency-dashboard/
 ├── net_debt_projection.csv
 ├── net_operating_balance_projection.csv
 └── category_growth.csv
+
+```
 
 ## Data Dictionary
 
