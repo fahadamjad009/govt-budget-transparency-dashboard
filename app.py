@@ -47,6 +47,9 @@ def load_data():
         "debt_proj": pd.read_csv("data/net_debt_projection.csv"),
         "nob_proj": pd.read_csv("data/net_operating_balance_projection.csv"),
         "cat_growth": pd.read_csv("data/category_growth.csv"),
+        "employment_state": pd.read_csv("data/public_sector_employment_by_state.csv"),
+        "employment_national": pd.read_csv("data/public_sector_employment_national.csv"),
+        "employment_industry": pd.read_csv("data/public_sector_employment_by_industry.csv"),
     }
 
 data = load_data()
@@ -58,7 +61,8 @@ st.caption("Built from ABS Government Finance Statistics, Annual 2024-25 (publis
            "Australian government (Commonwealth, state, territory, local), current prices, original series.")
 
 tabs = st.tabs(["💰 Budget Flow", "📊 Category Breakdown", "📈 Fiscal Trends",
-                "⚖️ Debt & Net Worth", "🔺 Growth Drivers", "🔮 Growth & Outlook"])
+                "⚖️ Debt & Net Worth", "🔺 Growth Drivers", "🔮 Growth & Outlook",
+                "🧑‍💼 Labour Force & Productivity"])
 
 with tabs[0]:
     c1, c2, c3, c4 = st.columns(4)
@@ -197,6 +201,58 @@ with tabs[5]:
     else:
         st.caption(f"Linear fit R\u00b2 = {nob_r2:.2f}.")
 
+with tabs[6]:
+    st.info("📌 Source: ABS Public Sector Employment and Earnings, Australia (cat. 6248.0.55.002), 2024-25 "
+            "financial year, released 6 November 2025. Employee job counts relate to June of the given year; "
+            "cash wages relate to the full financial year. Only two years of data are shown (June 2024 vs June "
+            "2025) — matching the same data-availability limitation already noted for COFOG-A category detail.")
+
+    en = data["employment_national"]
+    c1, c2, c3, c4 = st.columns(4)
+    total_row = en[en["level_of_government"] == "Total Public Sector"].iloc[0]
+    c1.metric("Total public sector jobs, Jun-25", f"{total_row['employee_jobs_thousands_jun25']:,.0f}k",
+              f"{total_row['jobs_growth_pct']:+.1f}%")
+    c2.metric("Total cash wages, 2024-25", f"${total_row['cash_wages_millions_2024_25']/1000:,.1f}b",
+              f"{total_row['wages_growth_pct']:+.1f}%")
+    c3.metric("Avg wage per job, 2024-25", f"${total_row['avg_wage_per_job_2024_25_thousands']:,.1f}k")
+    c4.metric("Fastest wage growth", "Commonwealth", f"{en[en['level_of_government']=='Commonwealth']['wages_growth_pct'].iloc[0]:+.1f}%")
+
+    st.subheader("Jobs growth vs wages growth by level of government")
+    en_plot = en[en["level_of_government"] != "Total Public Sector"]
+    fig_prod = go.Figure()
+    fig_prod.add_trace(go.Bar(x=en_plot["level_of_government"], y=en_plot["jobs_growth_pct"], name="Jobs growth %", marker_color=ACCENT))
+    fig_prod.add_trace(go.Bar(x=en_plot["level_of_government"], y=en_plot["wages_growth_pct"], name="Wages growth %", marker_color=ACCENT3))
+    fig_prod.update_layout(barmode="group", yaxis_title="YoY % change, 2023-24 → 2024-25")
+    st.plotly_chart(style_fig(fig_prod, 400), width="stretch")
+    st.caption("Where the wages bar exceeds the jobs bar, average pay per job rose — either wage growth outpacing "
+               "headcount growth, or a shift toward higher-paid roles. This is a cost-intensity signal, not a "
+               "labour productivity measure (no output data exists to compute genuine productivity here).")
+
+    st.subheader("Public sector employee jobs by state/territory and level of government, Jun-25")
+    es = data["employment_state"]
+    fig_state = px.bar(es, x="state", y="employee_jobs_thousands_jun25", color="level_of_government",
+                        color_discrete_map={"Commonwealth": ACCENT2, "State": ACCENT, "Local": ACCENT3},
+                        barmode="stack")
+    fig_state.update_layout(yaxis_title="Employee jobs ('000)")
+    st.plotly_chart(style_fig(fig_state, 450), width="stretch")
+
+    st.subheader("Cash wages by industry, 2024-25")
+    ei = data["employment_industry"].sort_values("cash_wages_millions_2024_25", ascending=True)
+    fig_ind = go.Figure(go.Bar(x=ei["cash_wages_millions_2024_25"], y=ei["industry"], orientation="h", marker_color=ACCENT))
+    fig_ind.update_layout(xaxis_title="Cash wages, $ million")
+    st.plotly_chart(style_fig(fig_ind, 450), width="stretch")
+    st.caption("Public administration and safety, Education and training, and Health care and social assistance "
+               "are the three largest public sector wage bills by industry — consistent with those categories' "
+               "dominance in the COFOG-A expense breakdown elsewhere in this dashboard.")
+
+    st.subheader("Detail by state/territory and level of government")
+    st.dataframe(es.rename(columns={
+        "state": "State/Territory", "level_of_government": "Level of Government",
+        "employee_jobs_thousands_jun24": "Jobs Jun-24 ('000)", "employee_jobs_thousands_jun25": "Jobs Jun-25 ('000)",
+        "cash_wages_millions_2023_24": "Wages 2023-24 ($m)", "cash_wages_millions_2024_25": "Wages 2024-25 ($m)"}),
+        use_container_width=True, hide_index=True)
+
 st.markdown("---")
-st.caption("Data: Australian Bureau of Statistics, Government Finance Statistics, Annual 2024-25. "
-           "All figures current prices, original series, all levels of Australian government.")
+st.caption("Data: Australian Bureau of Statistics, Government Finance Statistics, Annual 2024-25; and Public "
+           "Sector Employment and Earnings, Australia, 2024-25. All figures current prices, original series, "
+           "all levels of Australian government.")
