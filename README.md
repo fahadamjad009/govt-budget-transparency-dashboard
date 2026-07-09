@@ -3,11 +3,14 @@
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.59-FF4B4B)
 ![Plotly](https://img.shields.io/badge/Plotly-6.8-3F4F75)
+![React](https://img.shields.io/badge/React-19-61DAFB)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey)
 
 Interactive exploration of Australian government finances — where the money comes from, where it goes, and how the fiscal position has trended over the last decade.
 
-**Live demo:** https://govt-budget-transparency-dashboard.streamlit.app
+**Live demos:**
+- Streamlit dashboard: https://govt-budget-transparency-dashboard.streamlit.app
+- React companion, "The Ledger": https://fahadamjad009.github.io/govt-budget-transparency-dashboard/
 
 ## Business context
 
@@ -37,17 +40,25 @@ flowchart LR
     E --> F[projection + growth CSVs]
     D --> G[Streamlit app]
     F --> G
+    D --> H[React companion webapp]
+    F --> H
 ```
+
+## Two apps, one dataset
+
+**Streamlit dashboard** (`app.py`) — the primary interactive app: 7 tabs, filterable, full data tables, live charts.
+
+**React companion** (`webapp/`) — "The Ledger," a scroll-narrative reader covering the same 7 sections as numbered "Folios," styled around the visual identity of real Australian government Budget Papers (ink navy, brass accents, ledger typography), with an animated "Audited · ABS Sourced" stamp marking every cited data point. Built with Vite + React + recharts, deployed via GitHub Pages.
 
 ## App
 
-7 tabs: Budget Flow (Sankey) · Category Breakdown (treemap + YoY) · Fiscal Trends (revenue/expenses/NOB) · Debt & Net Worth · Growth Drivers · Growth & Outlook (category growth/decline, structural balance, 5-year linear trend extrapolation) · Labour Force & Productivity (public sector employment and wages by state/territory, level of government, and industry).
+7 tabs / folios: Budget Flow (Sankey) · Category Breakdown (treemap + YoY) · Fiscal Trends (revenue/expenses/NOB) · Debt & Net Worth · Growth Drivers · Growth & Outlook (category growth/decline, structural balance, 5-year linear trend extrapolation) · Labour Force & Productivity (public sector employment and wages by state/territory, level of government, and industry).
 
-**Important honesty note baked into the app itself:** the "outlook" projections are a simple linear trend fit over 10 annual data points — not an official fiscal forecast. Real budget forecasts (PBO, Treasury) model GDP growth, demographics, and policy settings explicitly. This is presented as illustrative direction only, clearly labeled in-app. The net operating balance trend in particular carries an R² of 0.009 — essentially no linear relationship with time — and the app surfaces this explicitly rather than hiding a weak fit.
+**Important honesty note baked into both apps:** the "outlook" projections are a simple linear trend fit over 10 annual data points — not an official fiscal forecast. Real budget forecasts (PBO, Treasury) model GDP growth, demographics, and policy settings explicitly. This is presented as illustrative direction only, clearly labeled in-app. The net operating balance trend in particular carries an R² of 0.009 — essentially no linear relationship with time — and both apps surface this explicitly rather than hiding a weak fit.
 
-The Labour Force & Productivity tab is similarly honest about its limits: it compares jobs growth vs wages growth as a **cost-intensity signal**, not a true labour productivity measure — no output data exists in this dataset to compute genuine productivity, and the app says so directly rather than implying otherwise.
+The Labour Force & Productivity section is similarly honest about its limits: it compares jobs growth vs wages growth as a **cost-intensity signal**, not a true labour productivity measure — no output data exists in this dataset to compute genuine productivity, and both apps say so directly rather than implying otherwise.
 
-**Design:** a light-blue "liquid glass" theme — translucent, backdrop-blurred chart cards, a soft wave divider, subtle shimmer animation — distinct from the dark-themed style used across this portfolio's other Streamlit projects.
+**Streamlit design:** a light-blue "liquid glass" theme — translucent, backdrop-blurred chart cards, a soft wave divider, subtle shimmer animation — distinct from the dark-themed style used across this portfolio's other Streamlit projects.
 
 ## Project structure
 
@@ -63,18 +74,24 @@ govt-budget-transparency-dashboard/
 │   ├── build_dataset.py         # transcribes official ABS GFS figures into CSVs
 │   ├── build_labour_force.py    # transcribes ABS Public Sector Employment figures into CSVs
 │   └── forecast_trends.py       # linear trend extrapolation + category growth calc
-└── data/
-    ├── cofog_expenses.csv
-    ├── fiscal_time_series.csv
-    ├── net_worth_debt.csv
-    ├── expense_growth_drivers.csv
-    ├── revenue_breakdown.csv
-    ├── net_debt_projection.csv
-    ├── net_operating_balance_projection.csv
-    ├── category_growth.csv
-    ├── public_sector_employment_by_state.csv
-    ├── public_sector_employment_national.csv
-    └── public_sector_employment_by_industry.csv
+├── data/
+│   ├── cofog_expenses.csv
+│   ├── fiscal_time_series.csv
+│   ├── net_worth_debt.csv
+│   ├── expense_growth_drivers.csv
+│   ├── revenue_breakdown.csv
+│   ├── net_debt_projection.csv
+│   ├── net_operating_balance_projection.csv
+│   ├── category_growth.csv
+│   ├── public_sector_employment_by_state.csv
+│   ├── public_sector_employment_national.csv
+│   └── public_sector_employment_by_industry.csv
+└── webapp/                      # React companion, "The Ledger" — deployed via GitHub Pages
+    ├── src/
+    │   ├── App.jsx
+    │   ├── data.js               # verified figures transcribed from data/*.csv
+    │   └── hooks/useReveal.js
+    └── vite.config.js
 ```
 
 ## Data Dictionary
@@ -207,6 +224,7 @@ govt-budget-transparency-dashboard/
 
 ## Quickstart
 
+**Streamlit dashboard:**
 ```bash
 python -m venv venv
 venv\Scripts\Activate.ps1        # Windows
@@ -217,24 +235,33 @@ python src/forecast_trends.py       # builds the trend-extrapolation + growth CS
 streamlit run app.py
 ```
 
+**React companion:**
+```bash
+cd webapp
+npm install
+npm run dev       # local dev server
+npm run deploy    # builds and publishes to the gh-pages branch
+```
+
 ## Tech stack
 
-Python · Pandas · NumPy · scikit-learn · Streamlit · Plotly (Sankey, treemap) · ABS GFS + Public Sector Employment data
+Python · Pandas · NumPy · scikit-learn · Streamlit · Plotly (Sankey, treemap) · React · Vite · recharts · ABS GFS + Public Sector Employment data
 
 ## Limitations
 
 - Only 2 years of category-level (COFOG-A) detail available (2023-24, 2024-25) — deeper historical category trends aren't possible without additional ABS releases
 - Only 2 years of public sector employment/wages detail available (Jun-24, Jun-25), matching the same ABS release cadence limitation
 - No productivity, output, or sector-employment data — this dataset covers fiscal flows only, not economic productivity by sector (would need a separate ABS Multifactor Productivity or Labour Force series)
-- The jobs-growth-vs-wages-growth comparison in the Labour Force tab is a cost-intensity signal, not a true productivity measure — explicitly labeled as such in-app
-- Outlook tab is a basic linear trend, not a real fiscal forecast — explicitly caveated in-app
+- The jobs-growth-vs-wages-growth comparison is a cost-intensity signal, not a true productivity measure — explicitly labeled as such in both apps
+- Outlook sections are a basic linear trend, not a real fiscal forecast — explicitly caveated in both apps
+- The React companion's data.js is a manually-verified snapshot of the Streamlit app's CSVs, not a live read of the data files — the two apps will drift out of sync if the underlying data is updated without also updating webapp/src/data.js
 - No automated test suite yet
 
 ## Roadmap
 
 - State/territory-level budget breakdown by expense category (currently all-levels-of-government aggregate only for COFOG-A detail; would require compiling individual state Budget Papers, since ABS does not publish a category × state cross-tab centrally)
 - pytest suite + CI badge
-- React/Vite companion webapp
+- Wire the React companion to read data.js from the actual CSVs at build time instead of a manually-maintained snapshot
 
 ## License
 
