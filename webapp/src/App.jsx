@@ -59,10 +59,30 @@ function Stat({ label, prefix = '', suffix = '', target, decimals = 1, negative 
   )
 }
 
-function SankeyNode({ x, y, width, height, index, payload }) {
+// Custom Sankey node renderer -- recharts does NOT auto-label nodes when a
+// custom node component is supplied, so the name text has to be drawn
+// explicitly here alongside the rectangle. Root node label sits to the
+// left (right-aligned text); category nodes sit to the right (left-aligned).
+function SankeyNode({ x, y, width, height, index, payload, containerWidth }) {
   const isRoot = index === 0
+  const textX = isRoot ? x - 10 : x + width + 10
+  const textAnchor = isRoot ? 'end' : 'start'
   return (
-    <Rectangle x={x} y={y} width={width} height={height} fill={isRoot ? INK : BRASS} fillOpacity={isRoot ? 1 : 0.85} />
+    <g>
+      <Rectangle x={x} y={y} width={width} height={height} fill={isRoot ? INK : BRASS} fillOpacity={isRoot ? 1 : 0.85} />
+      <text
+        x={textX}
+        y={y + height / 2}
+        textAnchor={textAnchor}
+        dominantBaseline="middle"
+        fontFamily="Inter"
+        fontSize={isRoot ? 13 : 12}
+        fontWeight={isRoot ? 600 : 500}
+        fill={INK}
+      >
+        {payload.name}
+      </text>
+    </g>
   )
 }
 
@@ -97,13 +117,13 @@ export default function App() {
 
         <Folio number="01" title="Budget flow" sub="How $1,030.5b in total expenses splits across the eleven COFOG-A functions of government.">
           <div className="chart-wrap">
-            <ResponsiveContainer width="100%" height={420}>
+            <ResponsiveContainer width="100%" height={460}>
               <Sankey
                 data={D.sankeyData}
                 node={<SankeyNode />}
                 link={{ stroke: BRASS, strokeOpacity: 0.25 }}
                 nodePadding={22}
-                margin={{ top: 10, right: 140, bottom: 10, left: 10 }}
+                margin={{ top: 10, right: 190, bottom: 10, left: 190 }}
               >
                 <Tooltip contentStyle={tooltipStyle} formatter={(v) => [`$${v}b`, 'Allocation']} />
               </Sankey>
