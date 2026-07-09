@@ -1,0 +1,41 @@
+:root {
+  --ink: #132A4C;
+  --paper: #F6F7F5;
+  --paper-warm: #EFF1EE;
+  --brass: #B08D57;
+  --slate: #5C7A99;
+  --ledger-red: #7A2E2E;
+  --hairline: #D6D9D4;
+
+  --font-display: 'Source Serif 4', Georgia, serif;
+  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--slate); }
+a:focus-visible, button:focus-visible {
+  outline: 2px solid var(--brass);
+  outline-offset: 3px;
+}
+
+::selection { background: var(--brass); color: var(--paper); }
